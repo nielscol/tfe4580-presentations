@@ -143,7 +143,7 @@
 			\item Worst case reference spur level.
 				\begin{itemize}
 					\scriptsize			
-					\item DCO tuning word toggling up/dowm every reference cycle.
+					\item DCO tuning word toggling up/down 1 LSB every reference cycle.
 				\end{itemize} 	
 			\item With $f_0$ = 2.4 GHz, $f_{clk}$ = 16 MHz:
 			\begin{itemize}
@@ -165,10 +165,11 @@
 			\vspace{1em}
 			\begin{itemize}
 				\scriptsize
-				\item Noise from toggling of $\sim$ 1 LSB of DCO tuning word in steady state tracking should be less than thermal phase noise of DCO.
+				\item In steady state, DCO tuning word will vary occassionaly by $\sim$ 1 LSB to track stochastic frequency changes.
 				\begin{itemize}
-					\scriptsize			
-					\item Very pessimistic estimate here (assumes abrupt frequency change).
+					\tiny
+					\item This generates noise and should be less than the thermal phase noise of DCO.		
+					\item Very pessimistic estimate here (assumes abrupt frequency change). Abrupt frequency steps contribute 1/$\Delta f$ dependent component to phase noise.
 				\end{itemize} 
 				\item Theoretical ring oscillator phase noise limit from [2]:
 				\tiny
@@ -176,7 +177,7 @@
 					PN_{min}(\Delta f)= 10\log 10\left(\frac{7.33k_BT}{P}\left(\frac{f_0}{\Delta f}\right)^2\right)
 				\end{equation}
 				\scriptsize
-				\item If $f_0$ = 2.4 GHz, P = 50 $\mu$W, $\Delta f$= 1 MHz, T = 293K, $\rightarrow$ \textbf{PN < -84.7 dBc/Hz}
+				\item If $f_0$ = 2.4 GHz, P = 50 $\mu$W, $\Delta f$= 1 MHz, T = 293K, $\rightarrow$ \textbf{PN < -84.7 dBc/Hz} from this noise process.
 				\begin{itemize}
 					\scriptsize			
 					\item LSB resolution of \textbf{50 kHz} seems feasible. Will have to verify with full PLL sim to account for loop dynamics.
@@ -204,12 +205,16 @@
 					\item Indeterminate IF assumed for wake up receivers, so accuracy not so critical.
 					\item If RF bandwidth of receiver > PLL bandwidth, reasonable assumption is maximum frequency offset (accuracy) should be < PLL bandwidth.
 					\item Current PLL bandwidth spec is 100 kHz, suggested 50 kHz LSB step from quantization noise analysis is sufficient?
+					\begin{itemize}
+						\scriptsize			
+						\item This is assuming accuracy is tied to DCO resolution.
+					\end{itemize} 
 				\end{itemize} 	
 			\item Linearity:
 			\begin{itemize}
 				\scriptsize			
-				\item Integral non-linearity over the tuning DCO range is not important, so no spec for INL is suggested.
-				\item Monotonicity is essential, however, must strictly have DNL < 1 LSB.
+				\item Integral non-linearity over the tuning DCO range is not important, so no spec for INL is suggested. Should be locally linear (constrains DNL).
+				\item Monotonicity is essential, so must strictly have DNL < 1 LSB.
 			\end{itemize} 
 		\end{itemize}  
 	\end{block}
@@ -244,7 +249,7 @@
 		\end{minipage}
  		\begin{itemize}
 			\scriptsize
-			\item $S_{\phi,out}(f)$ is the phase noise, N is the divider modulus, G(f) is the closed loop PLL transfer function, A(f) is the open loop transfer function, $\Delta t_{del}$ is the TDC time resolution.
+			\item $S_{\phi,out}(f)$ is the TDC phase noise component, N is the divider modulus, G(f) is the closed loop PLL transfer function, A(f) is the open loop transfer function, $\Delta t_{del}$ is the TDC time resolution.
 			\item G(0) = 1, and G(f) $\approx$ 1 for f $\in$ [0, $f_{CBW}$], where $f_{CBW}$ is the closed loop bandwidth.
 
 		\end{itemize}  
@@ -260,18 +265,19 @@
 			\item Naive estimate for TDC time resolution:
 			\begin{itemize}
 				\scriptsize
-				\item Phase noise flat within closed-loop bandwidth. This component dominates power of integrated phase noise.
-				\item Use Residual phase noise modulation equation and equation 2 to estimate $\Delta t_{del}$. 
+				\item Phase noise flat within closed-loop bandwidth. This component dominates power of the integrated phase noise a PLL with low TDC-resolution.
+				\item Use Residual frequency modulation equation and equation 2 (TDC phase noise) to estimate $\Delta t_{del}$. Integrate in f $\in$ [0, $f_{CBW}$]
 			\end{itemize} 
 			\begin{equation}
 				\Delta f_{RFM} = 2\int_{f_a}^{f_b}f^2*PN(f)df
 			\end{equation}
-			\item With $f_{clk}$ = 16 MHz, N = 150 (for 2.4 GHz synthesis), $\Delta f_{RFM}$ < 107 kHz, and $f_{CBW}$ = 100 kHz
+			\item With $f_{clk}$ = 16 MHz, N = 150 (for 2.4 GHz synthesis), $\Delta f_{RFM}$ < 107 kHz to meet BER requirement, and $f_{CBW}$ = 100 kHz. (PLL presumed to have very low TDC resolution)
  			\begin{itemize}
 				\scriptsize			
-				\item $\Delta t_{del}$ = 3.8 ns
+				\item $\Delta t_{del}$ < 3.8 ns
 				\item Phase noise of TDC below $f_{CBW}$ is -47.7 dBc/Hz
 				\item Equates to minimum of 16.4 quantization steps for TDC (4.03 bits).
+				\item Assumptions of high phase noise and low resolution appear valid.
 
 			\end{itemize} 
 		\end{itemize}   
