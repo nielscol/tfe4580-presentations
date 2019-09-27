@@ -108,7 +108,7 @@
 	\begin{block}{This week}
 		\begin{itemize}
 			\footnotesize
-			\item \textbf{Primary:} Loop analysis, requirements definition
+			\item \textbf{Primary:} Loop analysis, requirements definition.
 			\begin{itemize}
 				\footnotesize
 				\item Design open loop filter design to meet closed loop requirements.
@@ -206,11 +206,11 @@
 			\tiny
 			\vspace{-1em}
 			\begin{equation}
-				\Delta \phi_{DCO}[n; q] = N\cdot\Delta \phi_{REF}[n] = 2\pi \frac{N}{M}\left( e_\phi[n]-e_\phi[n-q]\right ),\hspace{2em} \Delta \phi_{DCO}[n; q] = \Delta \omega_{DCO}[n]qT_{ref} = 2\pi q \frac{\Delta f_{DCO}}{f_{ref}}
+				\Delta \phi_{DCO}[n; q] = N\cdot\Delta \phi_{REF}[n] = 2\pi \frac{N}{M}\left( e_\phi[n]-e_\phi[n-q]\right ),\hspace{2em} \Delta \phi_{DCO}[n; q] = \Delta \omega_{DCO}[n]qT_{ref} = 2\pi q \frac{\Delta \tilde f_{DCO}}{f_{ref}}
 			\end{equation}
 			\vspace{-1em}
 			\begin{equation}
-				\Delta f_{DCO} = \frac{f_{ref}}{q}\frac{N}{M}\left( e_\phi[n]-e_\phi[n-q]\right )
+				\Delta \tilde f_{c} =\Delta \tilde f_{DCO} = \frac{f_{ref}}{q}\frac{N}{M}\left( e_\phi[n]-e_\phi[n-q]\right )
 			\end{equation}				
 			\footnotesize	
 			\item Is a discrete differentiator, with gain coeficient to convert $d\phi/dt$ to frequency. 
@@ -230,14 +230,14 @@
 	\begin{block}{Coarse frequency offset estimation - continued}
 		\begin{itemize}
 			\footnotesize
-			\item Given DCO gain $K_{DCO}$, the gain $K_d$ of the filter is:
+			\item Given DCO gain $K_{DCO}$, the required gain $K_d$ of the filter is:
 			\tiny
 			\vspace{-0.5em}
 			\begin{equation}
 				K_{d} = \frac{f_{ref}}{qK_{DCO}}\frac{N}{M}\left( e_\phi[n]-e_\phi[n-q]\right )
 			\end{equation}				
 			\footnotesize	
-			\item Disable the coarse estimator off if $e_\phi[n]-e_\phi[n-q]$ < some threshold:
+			\item Disable the coarse estimator if $e_\phi[n]-e_\phi[n-q]$ < some threshold:
 			\begin{itemize}
 				\scriptsize
 				\item Offset small enough, allow to run as classical phase-detector mode.
@@ -329,23 +329,32 @@
 	\frametitle{Frequency Calibration}
 	\begin{block}{Coarse frequency calibration algorithm}
 		\begin{itemize}
+			\vspace{-0.25em}
 			\scriptsize
-			\item Ring oscillator DCO will have large variations in frequency due to PVT variation.
-			\item Will have bank of coarse capacitance values to adjust range of oscillator.
-			\item Utilize coarse frequency estimator in tuning.
-			\item DCO is has a tuning range of $\Delta f$.
-
+			\item Ring oscillator DCOs will have large variation in frequency due to PVT variation.
+			\item Use bank of coarse capacitance values to correct range of oscillator.
+			\item Coarse frequency estimator used in this calibration.  DCO is has a fine range of $\Delta f_{fine}$.
 		\end{itemize} 	
+		\vspace{-0.25em}
 		\scriptsize
-		\textbf{Coarse tuning state machine} (as loop pseudo-code)
+		\textbf{Coarse frequency tuning state machine} (as pseudo-code)
 			\begin{enumerate}
 				\scriptsize
-				\item Set $C_{coarse}$ = 0
+				\item $C_{tune}$ = $C_{opt}$ = 0;\hspace{1em} LE = $\Delta f_{fine}$		
 				\item Reset PLL
-				\item Estimate Frequency offset $\rightarrow f_{offset}$
-				\item \textbf{If} $f_{offset} > \Delta f/4$ \textbf{and} $f_{offset} \leq 3\Delta f/2$ : \textbf{break}
-				\item $C_{coarse}$ += 1
+				\item Estimate Frequency offset $\rightarrow \tilde f_{offset}$
+				\vspace{-0.2em}
+				\item \textbf{If} abs($\tilde f_{offset}$ - $\Delta f_{fine}/2$)  \textbf{<} LE: \hspace{1em}\color{teal} // Centers fine tuning range around target frequency
+				\color{black}
+				\begin{itemize}
+					\scriptsize
+					\item LE = abs($\tilde f_{offset}$ - $\Delta f_{fine}/2$)
+					\item $C_{opt}$ = $C_{tune}$
+				\end{itemize}	
+				\item \textbf{If} $C_{tune}$ \textbf{==} $C_{max}$: \textbf{Goto} 8		
+				\item $C_{tune}$ += 1
 				\item \textbf{Goto} 2
+				\item $C_{tune}$ = $C_{opt}$; \textbf{End}
 			\end{enumerate}
  
 	\end{block}
