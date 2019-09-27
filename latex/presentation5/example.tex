@@ -179,11 +179,11 @@
 		\vspace{-0.5em}
 		\begin{itemize}
 			\footnotesize
-			\item Two-fold approach: utilize fine and coarse frequency offset estimation.
+			\item Two-fold approach: utilize propotional-phase and coarse frequency offset estimation in feedback.
 			\begin{itemize}
 				\scriptsize
 				\item Coarse frequency estimator to handle high frequency offset (e.g. cold start-up).	
-				\item Fine frequency estimator for near steady state.
+				\item Proportional-phase for near steady state. Acts like fine frequency estimator.
 			\end{itemize}
 			\item Offset estimates are summed with previous oscillator tuning word (OTW, also $f_{ctrl}$ here), then low passed filtered to yield new OTW. 
 			\begin{itemize}
@@ -216,7 +216,7 @@
 			\item Is a discrete differentiator, with gain coeficient to convert $d\phi/dt$ to frequency. 
 			\begin{itemize}
 				\scriptsize
-				\item Rejects phase wrapping.	
+				\item Design logic to handle phase wrapping.	
 				\item Useful in coarse frequency range calibration. Can detect fast if frequency offset too large.
 				\item Delay q is used to increase frequency resolution. 
 			\end{itemize}			
@@ -237,7 +237,7 @@
 				K_{d} = \frac{f_{ref}}{qK_{DCO}}\frac{N}{M}\left( e_\phi[n]-e_\phi[n-q]\right )
 			\end{equation}				
 			\footnotesize	
-			\item Gate the coarse estimator off if $e_\phi[n]-e_\phi[n-q]$ < some threshold:
+			\item Disable the coarse estimator off if $e_\phi[n]-e_\phi[n-q]$ < some threshold:
 			\begin{itemize}
 				\scriptsize
 				\item Offset small enough, allow to run as classical phase-detector mode.
@@ -255,222 +255,102 @@
 \end{frame}
 
 
-\begin{frame}
-	\frametitle{Loop Filter}
-	\begin{block}{Modified implementation - PID}
-		\vspace{-0.5em}
-		\center\includegraphics[width=0.5\textwidth, angle=0]{pid_pll.pdf}
-		\vspace{-0.5em}
-		\begin{itemize}
-			\footnotesize
-			\item On the observation that the loop filter was basically a PID controller.
-			\begin{itemize}
-				\scriptsize
-				\item Add integral term to complete PID. Integral term keeps track of steady state offset of OTW, ideally yields 0 steady state error. 
-				\item Derivative term \textit{only} used to perform coarse adjustment.
-				\item Near/in steady, behaves as \textbf{PI controller}. 
-			\end{itemize}
-			\item 
-		\end{itemize} 	 
-	\end{block}
-\end{frame}
+% \begin{frame}
+% 	\frametitle{Loop Filter}
+% 	\begin{block}{Modified implementation - PID}
+% 		\vspace{-0.5em}
+% 		\center\includegraphics[width=0.5\textwidth, angle=0]{pid_pll.pdf}
+% 		\vspace{-0.5em}
+% 		\begin{itemize}
+% 			\footnotesize
+% 			\item On the observation that the loop filter was basically a PID controller.
+% 			\begin{itemize}
+% 				\scriptsize
+% 				\item Add integral term to complete PID. Integral term keeps track of steady state offset of OTW, ideally yields 0 steady state error. 
+% 				\item Derivative term \textit{only} used to perform coarse adjustment.
+% 				\item Near/in steady, behaves as \textbf{PI controller}. 
+% 			\end{itemize}
+% 		\end{itemize} 	 
+% 	\end{block}
+% \end{frame}
 
 
 \begin{frame}
 	\frametitle{Loop Filter}
 	\begin{block}{Loop Filter Gain Coefficients}
+		\vspace{-0.5em}
+		\center\includegraphics[width=0.75\textwidth, angle=0]{more_advanced.pdf}
+		% \vspace{-0.5em}
 		\begin{itemize}
 			\footnotesize
-			\item On the observation that the loop filter was basically a PID controller.
-			\begin{itemize}
-				\scriptsize
-				\item Add integral term to complete PID. Integral term keeps track of steady state offset of OTW, ideally yields 0 steady state error. 
-				\item Derivative term used to perform coarse adjustment.
-				\item Near/in steady, behaves as PI controller. 
-			\end{itemize}
-			\item 
+			\item When running in proportional-only feedback mode, the open loop gain $A(f)$ is:
+			\tiny
+			\begin{equation}
+				A(f) = K_p \frac{M}{N}\frac{K_{LPF}}{s + \omega_{LPF} - K_{LPF}}\frac{2\pi K_{DCO}}{s}
+			\end{equation}
+			\footnotesize
+			\item The closed loop gain is therefore (continuous):
+			\tiny
+			\begin{equation}
+				G(f) =  \frac{A(f)}{1+A(f)}= \frac{2\pi M K_pK_{LPF}K_{DCO}/N}{s^2+s(\omega_{LPF - K_{LPF}})/N + 2\pi M K_pK_{LPF}K_{DCO}/N}
+			\end{equation}	
 		\end{itemize} 	 
 	\end{block}
 \end{frame}
 
-% #############################################################################
-% DCO
-% #############################################################################
-
 \begin{frame}
-	\frametitle{DCO}
-	\begin{block}{Performance criteria}
-		\vspace{-.2em}
+	\frametitle{Loop Filter}
+	\begin{block}{Loop Filter Gain Coefficients}
 		\begin{itemize}
 			\scriptsize
-			\item Resolution set by frequency accuracy requirements, quantization noise.
-			\item Quantization noise is manifested here as:
-			\begin{itemize}
-				\scriptsize			
-				\item Reference spurs resulting from deterministic components of signal.
-				\item A quasi-random noise signal when lock is achieved.
-				\begin{itemize}
-					\scriptsize			
-					\item Results from stochastic toggling of $\sim$ 1 LSB of DCO tuning word to track low frequency variations.
-					\item Rolloff of -20 dB/decade at low frequency (same as ring oscillator), -40 dB/decade at high frequencies.
-				\end{itemize} 				
-			\end{itemize} 
-		\vspace{-1em}
-		\center\includegraphics[width=0.7\textwidth, angle=0]{quant_noise.pdf}
-		\vspace{-0.5em}  
-		\end{itemize}    
-	\end{block}
-\end{frame}
-
-\begin{frame}
-	\frametitle{DCO}
-	\begin{block}{Requirements based on reference spurs}
-		\vspace{-.2em}
-		\begin{itemize}
-			\footnotesize
-			\item Worst case reference spur level.
-				\begin{itemize}
-					\scriptsize			
-					\item DCO tuning word toggling up/down 1 LSB every reference cycle.
-				\end{itemize} 	
-			\item With $f_0$ = 2.4 GHz, $f_{clk}$ = 16 MHz:
-			\begin{itemize}
-				\scriptsize			
-				\item 52 kHz per LSB (i.e. $K_{DCO}$) is needed for a maximum -60 dBc reference spur level. 
-			\end{itemize} 
-		\end{itemize}  
-		\vspace{-1em}
-		\center\includegraphics[width=1.0\textwidth, angle=0]{refspur_level.png}
-		\vspace{-0.5em}  
-	\end{block}
-\end{frame}
-
-\begin{frame}
-	\frametitle{DCO}
-	\begin{block}{Requirements from steady state tracking of stochastic variation.}
-		% \vspace{-.2em}
-		\begin{minipage}{7cm}
-			\vspace{1em}
-			\begin{itemize}
-				\scriptsize
-				\item In steady state, DCO tuning word will vary occassionaly by $\sim$ 1 LSB to track stochastic frequency changes.
-				\begin{itemize}
-					\tiny
-					\item This generates noise and should be less than the thermal phase noise of DCO.		
-					\item Very pessimistic estimate here (assumes abrupt frequency change). Abrupt frequency steps contribute 1/$\Delta f$ dependent component to phase noise.
-				\end{itemize} 
-				\item Theoretical ring oscillator phase noise limit from [2]:
-				\tiny
-				\begin{equation}
-					PN_{min}(\Delta f)= 10\log 10\left(\frac{7.33k_BT}{P}\left(\frac{f_0}{\Delta f}\right)^2\right)
-				\end{equation}
-				\scriptsize
-				\item If $f_0$ = 2.4 GHz, P = 50 $\mu$W, $\Delta f$= 1 MHz, T = 293K, $\rightarrow$ \textbf{PN < -84.7 dBc/Hz} from this noise process.
-				\begin{itemize}
-					\scriptsize			
-					\item LSB resolution of \textbf{50 kHz} seems feasible. Will have to verify with full PLL sim to account for loop dynamics.
-				\end{itemize} 
-			\end{itemize}  
-		\end{minipage}%
-		% \hspace{-0.5cm}
-		\begin{minipage}{5cm}
-			% \vspace{-1.5em}
-			\includegraphics[width=1\textwidth, angle=0]{lsb_stochastic_pn.png}
-			% \vspace{-0.5em}  
-		\end{minipage}%
-	\end{block}
-\end{frame}
-
-\begin{frame}
-	\frametitle{DCO}
-	\begin{block}{Accuracy and Linearity}
-		\vspace{-.2em}
-		\begin{itemize}
-			\footnotesize
-			\item Frequency accuracy.
-				\begin{itemize}
-					\scriptsize			
-					\item Indeterminate IF assumed for wake up receivers, so accuracy not so critical.
-					\item If RF bandwidth of receiver > PLL bandwidth, reasonable assumption is maximum frequency offset (accuracy) should be < PLL bandwidth.
-					\item Current PLL bandwidth spec is 100 kHz, suggested 50 kHz LSB step from quantization noise analysis is sufficient?
-					\begin{itemize}
-						\scriptsize			
-						\item This is assuming accuracy is tied to DCO resolution.
-					\end{itemize} 
-				\end{itemize} 	
-			\item Linearity:
-			\begin{itemize}
-				\scriptsize			
-				\item Integral non-linearity over the tuning DCO range is not important, so no spec for INL is suggested. Should be locally linear (constrains DNL).
-				\item Monotonicity is essential, so must strictly have DNL < 1 LSB.
-			\end{itemize} 
-		\end{itemize}  
-	\end{block}
-\end{frame}
-
-% #############################################################################
-% TDC
-% #############################################################################
-
-\begin{frame}
-	\frametitle{TDC}
-	\begin{block}{Phase Noise Modeling}
- 		\begin{itemize}
-			\scriptsize
-			\item Based on a phase-domain model for PLL phase noise from Michael Perrot [1].
-
-		\end{itemize}  
-
-		\begin{minipage}{5cm}
+			\item The form of a second order low pass filter is, with natural frequency $\omega_n$ and damping coefficient $\zeta$:
 			\tiny
 			\begin{equation}
-				S_{\phi,out}(f)= f_{clk}\cdot\left| 2\pi NG(f) \right|^2\cdot\frac{\Delta t_{del}^2}{12}
+				H_{LPF}(f) = \frac{\omega_n^2}{s^2 + 2\zeta\omega_ns + \omega_n^2}
 			\end{equation}
-			\begin{equation}
-				G(f)= \frac{A(f)}{1 + A(f)}
-			\end{equation}
-		\end{minipage}
-		\begin{minipage}{6cm}
-			% \vspace{-1em}
-			\center\includegraphics[width=1\textwidth, angle=0]{pll_loop.png}
-			% \vspace{-0.5em}
-		\end{minipage}
- 		\begin{itemize}
 			\scriptsize
-			\item $S_{\phi,out}(f)$ is the TDC phase noise component, N is the divider modulus, G(f) is the closed loop PLL transfer function, A(f) is the open loop transfer function, $\Delta t_{del}$ is the TDC time resolution.
-			\item G(0) = 1, and G(f) $\approx$ 1 for f $\in$ [0, $f_{CBW}$], where $f_{CBW}$ is the closed loop bandwidth.
-
-		\end{itemize}  
+			\item Setting $H_{LPF}(f) = G(f)$, equivalencies for $\omega_n$ and $\zeta$ are found:
+			\tiny
+			\begin{equation}
+				\omega_n = \sqrt{2\pi M K_pK_{LPF}K_{DCO}/N}
+			\end{equation}			
+			\begin{equation}
+				\zeta = \frac{\omega_{LPF - K_{LPF}}}{2\sqrt{2\pi MN K_pK_{LPF}K_{DCO}}}
+			\end{equation}	
+			\scriptsize
+			\item The Butterworth closed loop response with 100 kHz bandwidth, $\omega_n \sim 2\pi\cdot 100 Khz$, $\zeta=0.707$.
+			\item Coefficients $K_{LPF}$, $K_p$, $\omega_n$ can be solved computationally.
+			\item Need to reformulate in Z-domain.
+		\end{itemize} 	 
 	\end{block}
 \end{frame}
-
 
 \begin{frame}
-	\frametitle{TDC}
-	\begin{block}{Phase Noise Modeling}
+	\frametitle{Frequency Calibration}
+	\begin{block}{Coarse frequency calibration algorithm}
 		\begin{itemize}
-			\footnotesize
-			\item Naive estimate for TDC time resolution:
-			\begin{itemize}
-				\scriptsize
-				\item Phase noise flat within closed-loop bandwidth. This component dominates power of the integrated phase noise a PLL with low TDC-resolution.
-				\item Use Residual frequency modulation equation and equation 2 (TDC phase noise) to estimate $\Delta t_{del}$. Integrate in f $\in$ [0, $f_{CBW}$]
-			\end{itemize} 
-			\begin{equation}
-				\Delta f_{RFM} = 2\int_{f_a}^{f_b}f^2*PN(f)df
-			\end{equation}
-			\item With $f_{clk}$ = 16 MHz, N = 150 (for 2.4 GHz synthesis), $\Delta f_{RFM}$ < 107 kHz to meet BER requirement, and $f_{CBW}$ = 100 kHz. (PLL presumed to have very low TDC resolution)
- 			\begin{itemize}
-				\scriptsize			
-				\item $\Delta t_{del}$ < 3.8 ns
-				\item Phase noise of TDC below $f_{CBW}$ is -47.7 dBc/Hz
-				\item Equates to minimum of 16.4 quantization steps for TDC (4.03 bits).
-				\item Assumptions of high phase noise and low resolution appear valid.
+			\scriptsize
+			\item Ring oscillator DCO will have large variations in frequency due to PVT variation.
+			\item Will have bank of coarse capacitance values to adjust range of oscillator.
+			\item Utilize coarse frequency estimator in tuning.
+			\item DCO is has a tuning range of $\Delta f$.
 
-			\end{itemize} 
-		\end{itemize}   
+		\end{itemize} 	
+		\scriptsize
+		\textbf{Coarse tuning state machine} (as loop pseudo-code)
+			\begin{enumerate}
+				\scriptsize
+				\item Set $C_{coarse}$ = 0
+				\item Reset PLL
+				\item Estimate Frequency offset $\rightarrow f_{offset}$
+				\item \textbf{If} $f_{offset} > \Delta f/4$ \textbf{and} $f_{offset} \leq 3\Delta f/2$ : \textbf{break}
+				\item $C_{coarse}$ += 1
+				\item \textbf{Goto} 2
+			\end{enumerate}
+ 
 	\end{block}
 \end{frame}
+
 
 % #############################################################################
 % Loop Dynamics (continuous)
@@ -658,16 +538,16 @@
 % #############################################################################
 
 
-\begin{frame}
-	\frametitle{Project Phases (continued)}
-	\begin{block}{Spring 2020}
-		[1] "Digital Frequency Synthesizers", Michael Perrott, 2019.\\
-		\hspace{16pt}\url{http://www.cppsim.com/PLL_Lectures/day4_am.pdf}\\
-		\vspace{1em}
-		[2] "Minimum Achievable Phase Noise of RC Oscillators",
-	Navid et al. 2005
-	\end{block}
-\end{frame}
+% \begin{frame}
+% 	\frametitle{Project Phases (continued)}
+% 	\begin{block}{Spring 2020}
+% 		[1] "Digital Frequency Synthesizers", Michael Perrott, 2019.\\
+% 		\hspace{16pt}\url{http://www.cppsim.com/PLL_Lectures/day4_am.pdf}\\
+% 		\vspace{1em}
+% 		[2] "Minimum Achievable Phase Noise of RC Oscillators",
+% 	Navid et al. 2005
+% 	\end{block}
+% \end{frame}
 
 
 \end{document}
