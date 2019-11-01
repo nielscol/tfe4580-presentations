@@ -209,7 +209,7 @@
 		\end{equation}
 		\item Given the mean of the phase noise $\langle\phi_n(t)\rangle$ = 0 and $|\phi_n(t)| <<$ 1, the amplitude of the signal can be approximated as:
 		\begin{equation}
-		\Re\{e^{\phi(t)}\} = \Re\{e^{\phi_{mod}(t)}e^{\phi_n(t)}\} \approx \Re\{e^{\phi_{mod}(t)}(1+j\phi_n(t))\}
+		\Re\{e^{j\phi(t)}\} = \Re\{e^{j\phi_{mod}(t)}e^{j\phi_n(t)}\} \approx \Re\{e^{j\phi_{mod}(t)}(1+j\phi_n(t))\}
 		\end{equation}
 		\begin{equation}
 		= \cos(\phi_{mod}(t)) - \phi_n(t)\sin(\phi_{mod}(t))
@@ -227,7 +227,7 @@
 		\footnotesize
 		\item In the frequency domain, the noise can be calculated as convolution of the modulated signal with the PLL phase noise
 		\item The in band power then can be calculated for both the signal and noise to yield SNR:
-		\center\includegraphics[width=0.6\linewidth]{snr.png}
+		\center\includegraphics[width=0.5\linewidth]{snr.png}
 		\end{itemize}    
 	\end{block}
 \end{frame}

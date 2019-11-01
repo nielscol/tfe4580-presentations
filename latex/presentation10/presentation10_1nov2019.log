@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.1.20)  1 NOV 2019 15:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.1.20)  1 NOV 2019 16:22
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1876,9 +1876,9 @@ Overfull \hbox (1.66794pt too wide) has occurred while \output is active
 File: snr.png Graphic file (type png)
 <use snr.png>
 Package pdftex.def Info: snr.png  used on input line 233.
-(pdftex.def)             Requested size: 188.30745pt x 141.23315pt.
+(pdftex.def)             Requested size: 156.92128pt x 117.689pt.
 
-Overfull \vbox (28.3423pt too high) detected at line 233
+Overfull \vbox (4.79814pt too high) detected at line 233
  []
 
 
