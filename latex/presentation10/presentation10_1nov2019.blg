@@ -1,0 +1,9 @@
+[0] Config.pm:302> INFO - This is Biber 2.9
+[0] Config.pm:305> INFO - Logfile is 'presentation10_1nov2019.blg'
+[21] biber:313> INFO - === fr. nov.  1, 2019, 15:01:38
+[36] Biber.pm:371> INFO - Reading 'presentation10_1nov2019.bcf'
+[79] Biber.pm:857> INFO - Found 0 citekeys in bib section 0
+[84] Utils.pm:169> WARN - The file 'presentation10_1nov2019.bcf' does not contain any citations!
+[89] bbl.pm:617> INFO - Writing 'presentation10_1nov2019.bbl' with encoding 'UTF-8'
+[89] bbl.pm:720> INFO - Output to presentation10_1nov2019.bbl
+[89] Biber.pm:110> INFO - WARNINGS: 1
